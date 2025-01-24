@@ -2,9 +2,10 @@ package co.edu.eci.arep;
 
 import java.net.*;
 import java.io.*;
+import java.nio.file.*;
 
 public class HttpServer {
-public static void main(String[] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) throws IOException, URISyntaxException {
         ServerSocket serverSocket = null;
         try {
             serverSocket = new ServerSocket(35000);
@@ -14,7 +15,6 @@ public static void main(String[] args) throws IOException, URISyntaxException {
         }
         boolean running = true;
         while (running) {
-
             Socket clientSocket = null;
             try {
                 System.out.println("Listo para recibir ...");
@@ -32,10 +32,13 @@ public static void main(String[] args) throws IOException, URISyntaxException {
 
             boolean isFirstLine = true;
             String file = "";
+            String method = "";
 
             while ((inputLine = in.readLine()) != null) {
-                if(isFirstLine){
-                    file = inputLine.split(" ")[1];
+                if (isFirstLine) {
+                    String[] requestParts = inputLine.split(" ");
+                    method = requestParts[0];
+                    file = requestParts[1];
                     isFirstLine = false;
                 }
                 System.out.println("Received: " + inputLine);
@@ -47,83 +50,80 @@ public static void main(String[] args) throws IOException, URISyntaxException {
             URI resourceuri = new URI(file);
             System.out.println("URI: " + resourceuri);
 
-            if(resourceuri.getPath().startsWith("/app/hello")){
-                outputLine = helloRestService(resourceuri.getPath(),resourceuri.getQuery());
+            if (method.equals("GET") && resourceuri.getPath().startsWith("/app/hello")) {
+                outputLine = helloRestService(resourceuri.getPath(), resourceuri.getQuery());
                 out.println(outputLine);
-            }else {
+            } else if (method.equals("POST") && resourceuri.getPath().startsWith("/app/hello")) {
+                StringBuilder requestBody = new StringBuilder();
+                while (in.ready()) {
+                    requestBody.append((char) in.read());
+                }
+                System.out.println("POST Body: " + requestBody);
 
-
-                outputLine = "HTTP/1.1 200 OK\r"
-                        + "Content-Type: text/html\r\n"
-                        + "\r\n"
-                        + "<!DOCTYPE html>\n" +
-                        "<html>\n" +
-                        "    <head>\n" +
-                        "        <title>Form Example</title>\n" +
-                        "        <meta charset=\"UTF-8\">\n" +
-                        "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                        "    </head>\n" +
-                        "    <body>\n" +
-                        "        <h1>Form with GET</h1>\n" +
-                        "        <form action=\"/hello\">\n" +
-                        "            <label for=\"name\">Name:</label><br>\n" +
-                        "            <input type=\"text\" id=\"name\" name=\"name\" value=\"John\"><br><br>\n" +
-                        "            <input type=\"button\" value=\"Submit\" onclick=\"loadGetMsg()\">\n" +
-                        "        </form> \n" +
-                        "        <div id=\"getrespmsg\"></div>\n" +
-                        "\n" +
-                        "        <script>\n" +
-                        "            function loadGetMsg() {\n" +
-                        "                let nameVar = document.getElementById(\"name\").value;\n" +
-                        "                const xhttp = new XMLHttpRequest();\n" +
-                        "                xhttp.onload = function() {\n" +
-                        "                    document.getElementById(\"getrespmsg\").innerHTML =\n" +
-                        "                    this.responseText;\n" +
-                        "                }\n" +
-                        "                xhttp.open(\"GET\", \"/app/hello?name=\"+nameVar);\n" +
-                        "                xhttp.send();\n" +
-                        "            }\n" +
-                        "        </script>\n" +
-                        "\n" +
-                        "        <h1>Form with POST</h1>\n" +
-                        "        <form action=\"/hellopost\">\n" +
-                        "            <label for=\"postname\">Name:</label><br>\n" +
-                        "            <input type=\"text\" id=\"postname\" name=\"name\" value=\"John\"><br><br>\n" +
-                        "            <input type=\"button\" value=\"Submit\" onclick=\"loadPostMsg(postname)\">\n" +
-                        "        </form>\n" +
-                        "        \n" +
-                        "        <div id=\"postrespmsg\"></div>\n" +
-                        "        \n" +
-                        "        <script>\n" +
-                        "            function loadPostMsg(name){\n" +
-                        "                let url = \"/app/hello?name=\" + name.value;\n" +
-                        "\n" +
-                        "                fetch (url, {method: 'POST'})\n" +
-                        "                    .then(x => x.text())\n" +
-                        "                    .then(y => document.getElementById(\"postrespmsg\").innerHTML = y);\n" +
-                        "            }\n" +
-                        "        </script>\n" +
-                        "    </body>\n" +
-                        "</html";
+                outputLine = postRestService(resourceuri.getPath(), requestBody.toString());
                 out.println(outputLine);
+            } else {
+                serveStaticFile(resourceuri.getPath(), out, clientSocket.getOutputStream());
             }
-                out.close();
-                in.close();
-                clientSocket.close();
-            }
-        serverSocket.close();
+
+            out.close();
+            in.close();
+            clientSocket.close();
         }
-
-
-
-    private static String helloRestService(String path, String query) {
-    System.out.println("Query" + query);
-    String response = "HTTP/1.1 200 OK\r\n"
-            + "Content-Type: application/json\r\n"
-            + "\r\n"
-            + "{\"name\":\"John\", \"age\":30, \"car\":null}";
-    return  response;
-
+        serverSocket.close();
     }
 
+    private static String helloRestService(String path, String query) {
+        System.out.println("Query: " + query);
+        String jsonResponse = "{\"name\":\"John\", \"age\":30, \"car\":null}";
+        String response = "HTTP/1.1 200 OK\r\n"
+                + "Content-Type: application/json\r\n"
+                + "Content-Length: " + jsonResponse.length() + "\r\n"
+                + "\r\n"
+                + jsonResponse;
+        return response;
+    }
+
+    private static String postRestService(String path, String body) {
+        System.out.println("POST Body: " + body);
+        String name = body.contains("name=") ? body.split("=")[1] : "Unknown";
+        String jsonResponse = "{\"message\":\"Hola " + name + ", tu solicitud POST fue recibida.\"}";
+        String response = "HTTP/1.1 200 OK\r\n"
+                + "Content-Type: application/json\r\n"
+                + "Content-Length: " + jsonResponse.length() + "\r\n"
+                + "\r\n"
+                + jsonResponse;
+        return response;
+    }
+
+    private static void serveStaticFile(String path, PrintWriter out, OutputStream dataOut) throws IOException {
+        if (path.equals("/")) {
+            path = "/index.html";
+        }
+
+        File file = new File("www" + path);
+        if (file.exists() && !file.isDirectory()) {
+            String contentType = Files.probeContentType(file.toPath());
+            byte[] fileData = Files.readAllBytes(file.toPath());
+
+            out.println("HTTP/1.1 200 OK");
+            out.println("Content-Type: " + contentType);
+            out.println("Content-Length: " + fileData.length);
+            out.println();
+            out.flush();
+
+            dataOut.write(fileData, 0, fileData.length);
+            dataOut.flush();
+        } else {
+            send404(out);
+        }
+    }
+
+    private static void send404(PrintWriter out) {
+        String response = "HTTP/1.1 404 Not Found\r\n"
+                + "Content-Type: text/html\r\n"
+                + "\r\n"
+                + "<html><body><h1>404 Not Found</h1></body></html>";
+        out.println(response);
+    }
 }
