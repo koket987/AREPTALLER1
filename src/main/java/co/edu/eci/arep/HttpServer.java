@@ -3,8 +3,12 @@ package co.edu.eci.arep;
 import java.net.*;
 import java.io.*;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HttpServer {
+    private static List<String> users = new ArrayList<>(); // Lista de usuarios
+
     public static void main(String[] args) throws IOException, URISyntaxException {
         ServerSocket serverSocket = null;
         try {
@@ -75,7 +79,9 @@ public class HttpServer {
 
     private static String helloRestService(String path, String query) {
         System.out.println("Query: " + query);
-        String jsonResponse = "{\"name\":\"John\", \"age\":30, \"car\":null}";
+        String name = query != null && query.contains("name=") ? query.split("=")[1] : "Unknown";
+        String message = users.contains(name) ? "Hola, " + name + ". ¡Bienvenido de nuevo!" : "El usuario " + name + " no está registrado.";
+        String jsonResponse = "{\"message\":\"" + message + "\"}";
         String response = "HTTP/1.1 200 OK\r\n"
                 + "Content-Type: application/json\r\n"
                 + "Content-Length: " + jsonResponse.length() + "\r\n"
@@ -87,7 +93,10 @@ public class HttpServer {
     private static String postRestService(String path, String body) {
         System.out.println("POST Body: " + body);
         String name = body.contains("name=") ? body.split("=")[1] : "Unknown";
-        String jsonResponse = "{\"message\":\"Hola " + name + ", tu solicitud POST fue recibida.\"}";
+        if (!users.contains(name)) {
+            users.add(name); // Agrega el usuario si no existe
+        }
+        String jsonResponse = "{\"message\":\"Usuario " + name + " registrado correctamente.\"}";
         String response = "HTTP/1.1 200 OK\r\n"
                 + "Content-Type: application/json\r\n"
                 + "Content-Length: " + jsonResponse.length() + "\r\n"
