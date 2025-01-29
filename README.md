@@ -117,7 +117,7 @@ Este proyecto sigue [SemVer](http://semver.org/) para la gestión de versiones. 
 
 ## Autor
 
-* **Santiago** - *Trabajo inicial* - [TuPerfilGitHub](https://github.com/tuusuario)
+* **Santiago** - *Trabajo inicial* - [Git:](https://github.com/koket987)
 
 También puedes ver la lista de [contribuyentes](https://github.com/tuusuario/ServidorWebJava/contributors) que han participado en este proyecto.
 
