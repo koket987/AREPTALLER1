@@ -13,6 +13,7 @@ Asegúrate de tener instalado lo siguiente:
 ```
 - Java 8 o superior
 - Una terminal o línea de comandos
+- Git para clonar el repositorio
 ```
 
 ### Instalación
@@ -72,6 +73,26 @@ http://localhost:35000/script.js
 http://localhost:35000/images/example1.png
 ```
 
+### Pruebas automatizadas
+
+Este proyecto incluye pruebas automatizadas para garantizar su correcto funcionamiento. Ejecuta los tests con:
+
+```
+cd src
+javac -cp .:/path/to/junit-4.12.jar co/edu/eci/arep/HttpServerTest.java
+java -cp .:/path/to/junit-4.12.jar org.junit.runner.JUnitCore co.edu.eci.arep.HttpServerTest
+```
+
+## Diseño del sistema
+
+El servidor sigue un diseño modular que permite la extensión de funcionalidades. 
+
+- **Manejo de solicitudes HTTP**: Soporta métodos `GET` y `POST`.
+- **Manejo de archivos estáticos**: Permite servir HTML, CSS, JS e imágenes.
+- **Endpoints REST**: Implementa un servicio REST básico.
+
+El código está estructurado en un solo archivo principal para facilitar la comprensión y modificaciones futuras.
+
 ## Despliegue
 
 Para uso en producción, considera ejecutar el servidor como un proceso en segundo plano o configurar un servicio systemd:
@@ -84,6 +105,7 @@ nohup java co.edu.eci.arep.HttpServer &
 
 * Java - Lenguaje principal utilizado
 * Biblioteca estándar de Java - Para manejo de red y archivos
+* JUnit - Para pruebas automatizadas
 
 ## Contribuciones
 
@@ -95,8 +117,9 @@ Este proyecto sigue [SemVer](http://semver.org/) para la gestión de versiones. 
 
 ## Autor
 
-* **Santiago** - *Trabajo inicial* - [Perfil:](https://github.com/koket987)
+* **Santiago** - *Trabajo inicial* - [TuPerfilGitHub](https://github.com/tuusuario)
 
+También puedes ver la lista de [contribuyentes](https://github.com/tuusuario/ServidorWebJava/contributors) que han participado en este proyecto.
 
 ## Licencia
 
