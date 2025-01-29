@@ -1,12 +1,14 @@
-function handleGet(event) {
+// Función para manejar el formulario GET
+document.getElementById("getForm").addEventListener("submit", function (event) {
     event.preventDefault();
     const name = document.getElementById("name").value;
     fetch(`/app/hello?name=${name}`)
         .then(response => response.text())
         .then(data => document.getElementById("getResponse").innerText = data);
-}
+});
 
-function handlePost(event) {
+// Función para manejar el formulario POST
+document.getElementById("postForm").addEventListener("submit", function (event) {
     event.preventDefault();
     const name = document.getElementById("postname").value;
     fetch(`/app/hello`, {
@@ -18,4 +20,4 @@ function handlePost(event) {
     })
         .then(response => response.text())
         .then(data => document.getElementById("postResponse").innerText = data);
-}
+});

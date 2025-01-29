@@ -80,7 +80,7 @@ public class HttpServer {
     private static String helloRestService(String path, String query) {
         System.out.println("Query: " + query);
         String name = query != null && query.contains("name=") ? query.split("=")[1] : "Unknown";
-        String message = users.contains(name) ? "El usuario " + name + " existe." : "El usuario " + name + " no existe.";
+        String message = users.contains(name) ? "Hola, " + name + ". ¡Bienvenido de nuevo!" : "El usuario " + name + " no está registrado.";
         String jsonResponse = "{\"message\":\"" + message + "\"}";
         String response = "HTTP/1.1 200 OK\r\n"
                 + "Content-Type: application/json\r\n"
@@ -96,7 +96,7 @@ public class HttpServer {
         if (!users.contains(name)) {
             users.add(name); // Agrega el usuario si no existe
         }
-        String jsonResponse = "{\"message\":\"Usuario " + name + " registrado.\"}";
+        String jsonResponse = "{\"message\":\"Usuario " + name + " registrado correctamente.\"}";
         String response = "HTTP/1.1 200 OK\r\n"
                 + "Content-Type: application/json\r\n"
                 + "Content-Length: " + jsonResponse.length() + "\r\n"

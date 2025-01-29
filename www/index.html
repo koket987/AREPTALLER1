@@ -3,11 +3,11 @@
 <head>
     <title>Servidor Web</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </head>
 <body>
 <h1>Bienvenido al Servidor Web</h1>
-<form onsubmit="handleGet(event)">
+<form id="getForm">
     <label for="name">Nombre:</label>
     <input type="text" id="name" name="name" required>
     <button type="submit">Enviar (GET)</button>
@@ -19,7 +19,7 @@
     <img src="images/example.jpg" alt="Ejemplo" width="300">
 </div>
 
-<form onsubmit="handlePost(event)">
+<form id="postForm">
     <label for="postname">Nombre:</label>
     <input type="text" id="postname" name="postname" required>
     <button type="submit">Enviar (POST)</button>
