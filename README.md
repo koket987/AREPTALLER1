@@ -100,6 +100,7 @@ http://localhost:35000/images/example1.png
 Este proyecto incluye pruebas automatizadas para garantizar su correcto funcionamiento. Ejecuta los tests con:
 
 ```
+(Se debe cononcer la ruta hasta junit para poder hacer las pruebas)
 cd src
 javac -cp .:/path/to/junit-4.12.jar co/edu/eci/arep/HttpServerTest.java
 java -cp .:/path/to/junit-4.12.jar org.junit.runner.JUnitCore co.edu.eci.arep.HttpServerTest
