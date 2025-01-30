@@ -142,7 +142,7 @@ Este proyecto sigue [SemVer](http://semver.org/) para la gestión de versiones. 
 
 * **Santiago** - *Trabajo inicial* - [GitHub Personal](https://github.com/koket987)
 
-=======
+
 
 ## Licencia
 
