@@ -12,6 +12,7 @@ Asegúrate de tener instalado lo siguiente:
 
 ```
 - Java 8 o superior
+- Apache Maven
 - Una terminal o línea de comandos
 ```
 
@@ -20,26 +21,35 @@ Asegúrate de tener instalado lo siguiente:
 Clona este repositorio y navega al directorio del proyecto:
 
 ```
-git clone https://github.com/tuusuario/ServidorWebJava.git
-cd ServidorWebJava
+git clone https://github.com/Koket987/AREPTALLER1.git
+cd AREPTALLER1
 ```
 
-Compila el servidor en Java:
+Compila y construye el proyecto con Maven:
 
 ```
-cd src
-javac co/edu/eci/arep/HttpServer.java
+mvn clean install
 ```
 
 Ejecuta el servidor:
 
 ```
-java co.edu.eci.arep.HttpServer
+mvn exec:java -Dexec.mainClass="co.edu.eci.arep.HttpServer"
 ```
 
 El servidor se iniciará en el puerto `35000` y estará listo para manejar solicitudes.
 
 ## Pruebas
+
+### Pruebas Unitarias
+
+Este proyecto incluye pruebas unitarias con JUnit 5. Para ejecutarlas, usa:
+
+```
+mvn test
+```
+
+### Pruebas de extremo a extremo
 
 Puedes probar el servidor abriendo un navegador y accediendo a:
 
@@ -47,7 +57,7 @@ Puedes probar el servidor abriendo un navegador y accediendo a:
 http://localhost:35000
 ```
 
-### Pruebas de extremo a extremo
+#### API REST
 
 Utiliza `curl` para probar los endpoints de la API:
 
@@ -58,7 +68,19 @@ curl -X GET "http://localhost:35000/app/hello?name=Santiago"
 Respuesta esperada:
 
 ```
-{"name":"Santiago", "age":30, "car":null}
+{"message":"El usuario Santiago no está registrado."}
+```
+
+Registra un usuario con:
+
+```
+curl -X POST -d "name=Santiago" http://localhost:35000/app/hello
+```
+
+Respuesta esperada:
+
+```
+{"message":"Usuario Santiago registrado correctamente."}
 ```
 
 ### Pruebas de archivos estáticos
@@ -77,12 +99,13 @@ http://localhost:35000/images/example1.png
 Para uso en producción, considera ejecutar el servidor como un proceso en segundo plano o configurar un servicio systemd:
 
 ```
-nohup java co.edu.eci.arep.HttpServer &
+nohup mvn exec:java -Dexec.mainClass="co.edu.eci.arep.HttpServer" &
 ```
 
 ## Construido con
 
 * Java - Lenguaje principal utilizado
+* Maven - Para la gestión de dependencias y automatización
 * Biblioteca estándar de Java - Para manejo de red y archivos
 
 ## Contribuciones
@@ -91,12 +114,11 @@ Siéntete libre de hacer fork y enviar pull requests para mejorar el proyecto.
 
 ## Versionado
 
-Este proyecto sigue [SemVer](http://semver.org/) para la gestión de versiones. Consulta los [tags en este repositorio](https://github.com/tuusuario/ServidorWebJava/tags) para versiones disponibles.
+Este proyecto sigue [SemVer](http://semver.org/) para la gestión de versiones. Consulta los [tags en este repositorio](https://github.com/Koket987/AREPTALLER1/tags) para versiones disponibles.
 
 ## Autor
 
 * **Santiago** - *Trabajo inicial* - [Perfil:](https://github.com/koket987)
-
 
 ## Licencia
 
@@ -106,4 +128,3 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.m
 
 * Inspiración de implementaciones de servidores web minimalistas
 * Comunidad de código abierto por las mejores prácticas
-

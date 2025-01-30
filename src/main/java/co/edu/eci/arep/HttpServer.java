@@ -77,7 +77,7 @@ public class HttpServer {
         serverSocket.close();
     }
 
-    private static String helloRestService(String path, String query) {
+    static String helloRestService(String path, String query) {
         System.out.println("Query: " + query);
         String name = query != null && query.contains("name=") ? query.split("=")[1] : "Unknown";
         String message = users.contains(name) ? "Hola, " + name + ". ¡Bienvenido de nuevo!" : "El usuario " + name + " no está registrado.";
@@ -90,7 +90,7 @@ public class HttpServer {
         return response;
     }
 
-    private static String postRestService(String path, String body) {
+    static String postRestService(String path, String body) {
         System.out.println("POST Body: " + body);
         String name = body.contains("name=") ? body.split("=")[1] : "Unknown";
         if (!users.contains(name)) {
