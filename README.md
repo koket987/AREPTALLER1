@@ -147,7 +147,7 @@ Este proyecto sigue [SemVer](http://semver.org/) para la gestión de versiones. 
 
 ## Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.md) para más detalles.
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
 ## Agradecimientos
 
