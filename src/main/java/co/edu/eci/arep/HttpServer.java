@@ -10,99 +10,78 @@ public class HttpServer {
     private static List<String> users = new ArrayList<>(); // Lista de usuarios
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-        ServerSocket serverSocket = null;
-        try {
-            serverSocket = new ServerSocket(35000);
-        } catch (IOException e) {
-            System.err.println("Could not listen on port: 35000.");
-            System.exit(1);
+        ServerSocket serverSocket = new ServerSocket(35000);
+        System.out.println("Servidor iniciado en el puerto 35000...");
+
+        while (true) {
+            Socket clientSocket = serverSocket.accept();
+            new Thread(() -> handleClient(clientSocket)).start(); // Manejo concurrente de clientes
         }
-        boolean running = true;
-        while (running) {
-            Socket clientSocket = null;
-            try {
-                System.out.println("Listo para recibir ...");
-                clientSocket = serverSocket.accept();
-            } catch (IOException e) {
-                System.err.println("Accept failed.");
-                System.exit(1);
-            }
+    }
 
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(
-                            clientSocket.getInputStream()));
-            String inputLine, outputLine;
-
-            boolean isFirstLine = true;
-            String file = "";
+    private static void handleClient(Socket clientSocket) {
+        try (
+                PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                OutputStream dataOut = clientSocket.getOutputStream();
+        ) {
+            String inputLine;
             String method = "";
+            String file = "";
+            int contentLength = 0;
 
-            while ((inputLine = in.readLine()) != null) {
-                if (isFirstLine) {
+            while ((inputLine = in.readLine()) != null && !inputLine.isEmpty()) {
+                System.out.println("Received: " + inputLine);
+
+                if (inputLine.startsWith("GET") || inputLine.startsWith("POST")) {
                     String[] requestParts = inputLine.split(" ");
                     method = requestParts[0];
                     file = requestParts[1];
-                    isFirstLine = false;
                 }
-                System.out.println("Received: " + inputLine);
-                if (!in.ready()) {
-                    break;
+                if (inputLine.toLowerCase().startsWith("content-length:")) {
+                    contentLength = Integer.parseInt(inputLine.split(":")[1].trim());
                 }
             }
 
-            URI resourceuri = new URI(file);
-            System.out.println("URI: " + resourceuri);
+            URI resourceUri = new URI(file);
+            System.out.println("URI: " + resourceUri);
 
-            if (method.equals("GET") && resourceuri.getPath().startsWith("/app/hello")) {
-                outputLine = helloRestService(resourceuri.getPath(), resourceuri.getQuery());
-                out.println(outputLine);
-            } else if (method.equals("POST") && resourceuri.getPath().startsWith("/app/hello")) {
+            if (method.equals("GET") && resourceUri.getPath().startsWith("/app/hello")) {
+                String outputLine = helloRestService(resourceUri.getQuery());
+                sendResponse(out, dataOut, outputLine);
+            } else if (method.equals("POST") && resourceUri.getPath().startsWith("/app/hello")) {
                 StringBuilder requestBody = new StringBuilder();
-                while (in.ready()) {
+                for (int i = 0; i < contentLength; i++) {
                     requestBody.append((char) in.read());
                 }
-                System.out.println("POST Body: " + requestBody);
 
-                outputLine = postRestService(resourceuri.getPath(), requestBody.toString());
-                out.println(outputLine);
+                System.out.println("POST Body: " + requestBody);
+                String outputLine = postRestService(requestBody.toString());
+                sendResponse(out, dataOut, outputLine);
             } else {
-                serveStaticFile(resourceuri.getPath(), out, clientSocket.getOutputStream());
+                serveStaticFile(resourceUri.getPath(), out, dataOut);
             }
 
-            out.close();
-            in.close();
             clientSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        serverSocket.close();
     }
 
-    static String helloRestService(String path, String query) {
+    static String helloRestService(String query) {
         System.out.println("Query: " + query);
         String name = query != null && query.contains("name=") ? query.split("=")[1] : "Unknown";
         String message = users.contains(name) ? "Hola, " + name + ". ¡Bienvenido de nuevo!" : "El usuario " + name + " no está registrado.";
-        String jsonResponse = "{\"message\":\"" + message + "\"}";
-        String response = "HTTP/1.1 200 OK\r\n"
-                + "Content-Type: application/json\r\n"
-                + "Content-Length: " + jsonResponse.length() + "\r\n"
-                + "\r\n"
-                + jsonResponse;
-        return response;
+        return jsonResponse(message);
     }
 
-    static String postRestService(String path, String body) {
+    static String postRestService(String body) {
         System.out.println("POST Body: " + body);
         String name = body.contains("name=") ? body.split("=")[1] : "Unknown";
         if (!users.contains(name)) {
-            users.add(name); // Agrega el usuario si no existe
+            users.add(name);
         }
-        String jsonResponse = "{\"message\":\"Usuario " + name + " registrado correctamente.\"}";
-        String response = "HTTP/1.1 200 OK\r\n"
-                + "Content-Type: application/json\r\n"
-                + "Content-Length: " + jsonResponse.length() + "\r\n"
-                + "\r\n"
-                + jsonResponse;
-        return response;
+        return jsonResponse("Usuario " + name + " registrado correctamente.");
     }
 
     private static void serveStaticFile(String path, PrintWriter out, OutputStream dataOut) throws IOException {
@@ -134,5 +113,21 @@ public class HttpServer {
                 + "\r\n"
                 + "<html><body><h1>404 Not Found</h1></body></html>";
         out.println(response);
+        out.flush();
+    }
+
+    private static void sendResponse(PrintWriter out, OutputStream dataOut, String response) throws IOException {
+        out.println(response);
+        out.flush();
+        dataOut.flush();
+    }
+
+    private static String jsonResponse(String message) {
+        String jsonResponse = "{\"message\":\"" + message + "\"}";
+        return "HTTP/1.1 200 OK\r\n"
+                + "Content-Type: application/json\r\n"
+                + "Content-Length: " + jsonResponse.length() + "\r\n"
+                + "\r\n"
+                + jsonResponse;
     }
 }
